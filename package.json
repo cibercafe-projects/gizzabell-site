@@ -1,0 +1,48 @@
+{
+  "name": "gizzabell-site",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && node scripts/check-budget.mjs",
+    "preview": "astro preview",
+    "start": "node ./dist/server/entry.mjs",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "typecheck": "astro check",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "validate:content": "node scripts/validate-content.mjs",
+    "check-budget": "node scripts/check-budget.mjs",
+    "seed:fixtures": "node scripts/seed-fixtures.mjs",
+    "admin:create": "node scripts/create-admin.mjs",
+    "assets:prepare": "node scripts/prepare-assets.mjs",
+    "migrate:db": "node scripts/migrate-to-db.mjs"
+  },
+  "overrides": {
+    "minimatch": "^11.0.1"
+  },
+  "dependencies": {
+    "@astrojs/node": "11.1.9",
+    "astro": "7.4.5",
+    "marked": "18.1.3",
+    "yaml": "2.9.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.12",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "24.10.1",
+    "eslint": "^10.14.0",
+    "eslint-plugin-astro": "^3.2.1",
+    "prettier": "^3.9.10",
+    "prettier-plugin-astro": "0.14.1",
+    "sharp": "0.35.5",
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.72.1",
+    "vitest": "5.1.0"
+  }
+}

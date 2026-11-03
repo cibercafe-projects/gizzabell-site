@@ -1,0 +1,130 @@
+---
+import type { Midia, Post } from '~/lib/content/types';
+import type { TamanhoTile } from '~/lib/content/popularity';
+
+interface Props {
+  post: Post;
+  tamanho?: TamanhoTile;
+}
+
+const { post, tamanho = 'pequeno' } = Astro.props;
+const capa: Midia | null = post.capa;
+const ehVideo = post.formato === 'video';
+---
+
+<a
+  class={`tile tile--${tamanho}`}
+  href={post.url}
+  data-slug={post.slug}
+  data-post={post.slug}
+  aria-label={`${post.nome}${post.resumo ? ` — ${post.resumo}` : ''}`}
+>
+  {
+    capa ? (
+      <img
+        src={capa.url}
+        alt={post.nome}
+        width={capa.largura ?? undefined}
+        height={capa.altura ?? undefined}
+        loading={tamanho === 'grande' ? 'eager' : 'lazy'}
+        decoding="async"
+      />
+    ) : (
+      <span class="tile__vazio" aria-hidden="true">
+        ◈
+      </span>
+    )
+  }
+
+  {ehVideo && (
+    <span class="tile__play" aria-hidden="true">
+      ▶
+    </span>
+  )}
+
+  <span class="tile__legenda">
+    <span class="tile__titulo">{post.nome}</span>
+    <span class="tile__meta mono">{post.categoria}</span>
+  </span>
+</a>
+
+<style>
+  .tile {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    text-decoration: none;
+    color: var(--text);
+    transition: var(--transition);
+  }
+
+  .tile:hover,
+  .tile:focus-visible {
+    border-color: var(--accent);
+    box-shadow: var(--glow-accent), var(--shadow-card-hover);
+    text-decoration: none;
+  }
+
+  .tile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    aspect-ratio: 1 / 1;
+  }
+
+  .tile--medio img {
+    aspect-ratio: 2 / 1;
+  }
+
+  .tile--grande img {
+    aspect-ratio: 1 / 1;
+  }
+
+  .tile__vazio {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1 / 1;
+    font-size: 2rem;
+    color: var(--line-strong);
+  }
+
+  .tile__play {
+    position: absolute;
+    top: var(--sp-2);
+    right: var(--sp-2);
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--bg) 70%, transparent);
+    color: var(--accent-2);
+    text-shadow: var(--glow-cyan);
+    font-size: var(--fs-sm);
+  }
+
+  .tile__legenda {
+    position: absolute;
+    inset: auto 0 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--sp-3);
+    background: linear-gradient(transparent, color-mix(in srgb, var(--bg) 88%, transparent));
+  }
+
+  .tile__titulo {
+    font-size: var(--fs-sm);
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tile__meta {
+    color: var(--accent-2);
+  }
+</style>

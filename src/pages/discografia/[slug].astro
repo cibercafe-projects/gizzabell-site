@@ -1,0 +1,206 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { releaseRepository } from '~/lib/content/file-release.repository';
+
+const { slug } = Astro.params;
+const lancamento = slug ? await releaseRepository.getBySlug(slug) : null;
+
+if (!lancamento) {
+  return Astro.rewrite('/404');
+}
+---
+
+<BaseLayout titulo={`${lancamento.nome} — Discografia`} descricao={lancamento.descricao || lancamento.nome} imagem={lancamento.capa?.url}>
+  <article class="detalhe">
+    <p class="detalhe__voltar"><a href="/discografia">← Voltar para a discografia</a></p>
+
+    <header class="detalhe__cabecalho">
+      <div class="detalhe__capa">
+        {
+          lancamento.capa ? (
+            <img
+              src={lancamento.capa.url}
+              alt={`Capa de ${lancamento.nome}`}
+              width={lancamento.capa.largura ?? undefined}
+              height={lancamento.capa.altura ?? undefined}
+              decoding="async"
+            />
+          ) : (
+            <span class="detalhe__vazio" aria-hidden="true">◈</span>
+          )
+        }
+      </div>
+      <div>
+        <p class="mono detalhe__meta">
+          {lancamento.tipo} · {lancamento.ano}
+          {lancamento.data ? ` · ${lancamento.data}` : ''}
+        </p>
+        <h1 class="neon-text detalhe__titulo">{lancamento.nome}</h1>
+        {lancamento.descricaoHtml && (
+          <div class="prose" set:html={lancamento.descricaoHtml} />
+        )}
+        {
+          lancamento.links.length > 0 && (
+            <p class="detalhe__links">
+              {lancamento.links.map((link) => (
+                <a class="btn btn--ghost" href={link.url} target="_blank" rel="noopener noreferrer">
+                  {link.rotulo}
+                </a>
+              ))}
+            </p>
+          )
+        }
+      </div>
+    </header>
+
+    <section class="faixas">
+      <h2 class="faixas__titulo">Faixas</h2>
+      {
+        lancamento.faixas.length === 0 ? (
+          <p class="empty">Este lançamento ainda não tem faixas cadastradas.</p>
+        ) : (
+          <ol class="faixas__lista list-void">
+            {lancamento.faixas.map((faixa, i) => (
+              <li class="faixa" id={`faixa-${faixa.slug}`}>
+                <div class="faixa__topo">
+                  <span class="mono faixa__numero">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="faixa__titulo">{faixa.titulo}</span>
+                  {faixa.duracao && <span class="mono faixa__duracao">{faixa.duracao}</span>}
+                  {faixa.audio && (
+                    <audio controls preload="none" src={faixa.audio.url} class="faixa__audio" />
+                  )}
+                </div>
+                {faixa.letra ? (
+                  <details class="faixa__letra">
+                    <summary>Letra</summary>
+                              <div class="prose" set:html={faixa.letraHtml} />
+                  </details>
+                ) : (
+                  <p class="faixa__sem-letra mono">Letra indisponível</p>
+                )}
+              </li>
+            ))}
+          </ol>
+        )
+      }
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .detalhe {
+    padding-block: var(--sp-5);
+  }
+
+  .detalhe__cabecalho {
+    display: grid;
+    gap: var(--sp-5);
+    grid-template-columns: 1fr;
+    margin-bottom: var(--sp-6);
+  }
+
+  @media (min-width: 760px) {
+    .detalhe__cabecalho {
+      grid-template-columns: 260px 1fr;
+      align-items: start;
+    }
+  }
+
+  .detalhe__capa {
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+  }
+
+  .detalhe__capa img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+
+  .detalhe__vazio {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1 / 1;
+    color: var(--line-strong);
+    font-size: 3rem;
+  }
+
+  .detalhe__meta {
+    margin: 0;
+    color: var(--accent-2);
+  }
+
+  .detalhe__titulo {
+    margin: var(--sp-1) 0 var(--sp-3);
+  }
+
+  .detalhe__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin: var(--sp-3) 0 0;
+  }
+
+  .faixas__titulo {
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+    color: var(--accent-2);
+  }
+
+  .faixas__lista {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+  }
+
+  .faixa {
+    padding: var(--sp-3);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  .faixa__topo {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    flex-wrap: wrap;
+  }
+
+  .faixa__numero {
+    color: var(--accent);
+  }
+
+  .faixa__titulo {
+    font-weight: 600;
+  }
+
+  .faixa__duracao {
+    color: var(--text-dim);
+  }
+
+  .faixa__audio {
+    margin-left: auto;
+    max-width: 280px;
+    width: 100%;
+  }
+
+  .faixa__letra {
+    margin-top: var(--sp-2);
+  }
+
+  .faixa__letra summary {
+    cursor: pointer;
+    min-height: var(--tap-min);
+    display: inline-flex;
+    align-items: center;
+    color: var(--accent-2);
+  }
+
+  .faixa__sem-letra {
+    margin: var(--sp-2) 0 0;
+    color: var(--text-dim);
+  }
+</style>

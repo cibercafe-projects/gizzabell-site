@@ -1,0 +1,167 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { postRepository } from '~/lib/content/file-post.repository';
+import { CATEGORIAS_TIMELINE } from '~/lib/content/types';
+
+const posts = await postRepository.list();
+const timeline = posts
+  .filter((p) => CATEGORIAS_TIMELINE.includes(p.categoria))
+  .sort((a, b) => b.data.localeCompare(a.data));
+---
+
+<BaseLayout titulo="Timeline — Gizza Bell" descricao="Lançamentos, shows e trabalhos da Gizza Bell, em ordem cronológica.">
+  <header class="cabecalho">
+    <h1 class="neon-text">Timeline</h1>
+    <p class="cabecalho__sub">Lançamentos, shows, eventos e trabalhos, do mais recente ao mais antigo.</p>
+  </header>
+
+  {
+    timeline.length === 0 ? (
+      <p class="empty">Nenhum post marcado para a timeline ainda.</p>
+    ) : (
+      <ol class="linha list-void">
+        {timeline.map((post) => (
+          <li class="linha__item">
+            <a class="linha__link" href={post.url} data-post={post.slug}>
+              <div class="linha__capa">
+                {post.capa ? (
+                  <img
+                    src={post.capa.url}
+                    alt={post.nome}
+                    width={post.capa.largura ?? undefined}
+                    height={post.capa.altura ?? undefined}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : (
+                  <span class="linha__vazio" aria-hidden="true">◈</span>
+                )}
+              </div>
+              <div class="linha__texto">
+                <p class="linha__meta mono">
+                  {post.data} · {post.categoria}
+                </p>
+                <h2 class="linha__titulo">{post.nome}</h2>
+                {post.resumo && <p class="linha__resumo">{post.resumo}</p>}
+              </div>
+            </a>
+          </li>
+        ))}
+      </ol>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .cabecalho {
+    padding-block: var(--sp-6) var(--sp-5);
+  }
+
+  .cabecalho h1 {
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+  }
+
+  .cabecalho__sub {
+    margin: 0;
+    color: var(--text-muted);
+  }
+
+  .linha {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+  }
+
+  .linha__item {
+    position: relative;
+    padding-left: var(--sp-5);
+  }
+
+  .linha__item::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 8px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: var(--glow-accent-strong);
+  }
+
+  .linha__item::after {
+    content: '';
+    position: absolute;
+    left: 9px;
+    top: 18px;
+    bottom: -18px;
+    width: 1px;
+    background: linear-gradient(var(--line-strong), transparent);
+  }
+
+  .linha__item:last-child::after {
+    display: none;
+  }
+
+  .linha__link {
+    display: grid;
+    gap: var(--sp-4);
+    grid-template-columns: 1fr;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  @media (min-width: 700px) {
+    .linha__link {
+      grid-template-columns: 160px 1fr;
+      align-items: center;
+    }
+  }
+
+  .linha__link:hover {
+    text-decoration: none;
+  }
+
+  .linha__link:hover .linha__titulo {
+    color: var(--accent);
+    text-shadow: var(--glow-accent);
+  }
+
+  .linha__capa {
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+  }
+
+  .linha__capa img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+
+  .linha__vazio {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1 / 1;
+    color: var(--line-strong);
+    font-size: 1.6rem;
+  }
+
+  .linha__meta {
+    margin: 0;
+    color: var(--accent-2);
+  }
+
+  .linha__titulo {
+    margin: var(--sp-1) 0;
+    font-size: var(--fs-lg);
+  }
+
+  .linha__resumo {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: var(--fs-sm);
+  }
+</style>

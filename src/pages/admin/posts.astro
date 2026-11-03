@@ -1,0 +1,206 @@
+---
+import AdminLayout from '~/layouts/AdminLayout.astro';
+import { postRepository } from '~/lib/content/file-post.repository';
+import { CATEGORIAS } from '~/lib/content/types';
+
+const posts = await postRepository.list({ incluirPrivados: true });
+const erro = Astro.url.searchParams.get('erro');
+const ok = Astro.url.searchParams.get('ok');
+
+const editar = Astro.url.searchParams.get('editar');
+const emEdicao = editar ? (posts.find((p) => p.slug === editar) ?? null) : null;
+---
+
+<AdminLayout titulo="Posts">
+  <h1 class="titulo neon-text">Posts</h1>
+
+  {erro && <p class="alerta" role="alert">{erro}</p>}
+  {ok && <p class="alerta alerta--ok" role="status">Salvo.</p>}
+
+  <div class="grade">
+    <section class="card caixa">
+      <h2 class="caixa__titulo">{emEdicao ? `Editar: ${emEdicao.nome}` : 'Novo post'}</h2>
+
+      <form method="post" action="/admin/salvar-post" enctype="multipart/form-data">
+        <input type="hidden" name="slug" value={emEdicao?.slug ?? ''} />
+
+        <label class="field">
+          <span>Nome do post</span>
+          <input class="input" type="text" name="nome" required value={emEdicao?.nome ?? ''} />
+        </label>
+
+        <label class="field">
+          <span>Data</span>
+          <input class="input" type="date" name="data" required value={emEdicao?.data ?? ''} />
+        </label>
+
+        <label class="field">
+          <span>Categoria</span>
+          <select class="select" name="categoria" required>
+            {CATEGORIAS.map((c) => (
+              <option value={c} selected={emEdicao?.categoria === c}>{c}</option>
+            ))}
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Pasta (dd-mm-aaa-hh-mm-ss-nome)</span>
+          <input
+            class="input"
+            type="text"
+            name="pasta"
+            placeholder="14-11-2026-18-30-45-show-sampa"
+            value={emEdicao?.pasta ?? ''}
+          />
+        </label>
+
+        <label class="field">
+          <span>Mídias (um caminho por linha, relativo a files/)</span>
+          <textarea class="textarea" name="midias" rows="4" placeholder="pics/14-11-2026-18-30-45-show-sampa/01.webp">
+{emEdicao?.midias.map((m) => m.caminho).join('\n')}</textarea
+          >
+        </label>
+
+        <label class="field">
+          <span>Poster (opcional)</span>
+          <input class="input" type="text" name="poster" value={emEdicao?.poster?.caminho ?? ''} />
+        </label>
+
+        <label class="field">
+          <span>Tags (separadas por vírgula)</span>
+          <input class="input" type="text" name="tags" value={emEdicao?.tags.join(', ') ?? ''} />
+        </label>
+
+        <label class="field">
+          <span>Descrição</span>
+          <textarea class="textarea" name="descricao" rows="6">{emEdicao?.descricao ?? ''}</textarea>
+        </label>
+
+        <label class="check">
+          <input type="checkbox" name="privado" value="1" checked={emEdicao?.privado ?? false} />
+          <span>Privado (visível só no backoffice)</span>
+        </label>
+
+        <label class="field">
+          <span>Enviar arquivos (opcional)</span>
+          <input class="input" type="file" name="arquivos" multiple accept="image/*,video/mp4" />
+        </label>
+
+        <button type="submit" class="btn">Salvar post</button>
+      </form>
+    </section>
+
+    <section class="caixa">
+      <h2 class="caixa__titulo">Publicados</h2>
+      {
+        posts.length === 0 ? (
+          <p class="empty">Nenhum post ainda.</p>
+        ) : (
+          <ul class="list-void lista">
+            {posts.map((post) => (
+              <li class="lista__item">
+                <div>
+                  <p class="lista__nome">{post.nome}</p>
+                  <p class="mono lista__meta">
+                    {post.data} · {post.categoria} · {post.midias.length} mídia(s)
+                    {post.privado && ' · privado'}
+                  </p>
+                </div>
+                <div class="lista__acoes">
+                  <a class="btn btn--ghost" href={`/admin/posts?editar=${post.slug}`}>
+                    Editar
+                  </a>
+                  <form method="post" action="/admin/remover-post">
+                    <input type="hidden" name="slug" value={post.slug} />
+                    <button type="submit" class="btn btn--ghost">Remover</button>
+                  </form>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </section>
+  </div>
+</AdminLayout>
+
+<style>
+  .titulo {
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+  }
+
+  .alerta {
+    padding: var(--sp-3);
+    border: 1px solid var(--neon-magenta);
+    border-radius: var(--radius);
+    color: var(--neon-magenta);
+  }
+
+  .alerta--ok {
+    border-color: var(--neon-lime);
+    color: var(--neon-lime);
+  }
+
+  .grade {
+    display: grid;
+    gap: var(--sp-4);
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  @media (min-width: 960px) {
+    .grade {
+      grid-template-columns: minmax(0, 420px) 1fr;
+    }
+  }
+
+  .caixa {
+    padding: var(--sp-4);
+  }
+
+  .caixa__titulo {
+    font-size: var(--fs-lg);
+    color: var(--accent-2);
+    margin-bottom: var(--sp-3);
+  }
+
+  .check {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    min-height: var(--tap-min);
+    margin-bottom: var(--sp-4);
+    font-size: var(--fs-sm);
+  }
+
+  .lista {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .lista__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    padding-block: var(--sp-3);
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+
+  .lista__nome {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .lista__meta {
+    margin: 0;
+  }
+
+  .lista__acoes {
+    display: flex;
+    gap: var(--sp-2);
+    align-items: center;
+  }
+</style>

@@ -1,0 +1,89 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+
+const EMAIL = 'contato@gizzabell.com';
+const REDES = [
+  { nome: 'Instagram', url: 'https://instagram.com/gizzabell' },
+  { nome: 'Bandcamp', url: 'https://bandcamp.com/gizzabell' },
+  { nome: 'Spotify', url: 'https://open.spotify.com/artist/gizzabell' },
+  { nome: 'YouTube', url: 'https://youtube.com/@gizzabell' },
+];
+---
+
+<BaseLayout titulo="Contato — Gizza Bell" descricao="Contato e redes da Gizza Bell.">
+  <header class="cabecalho">
+    <h1 class="neon-text">Contato</h1>
+    <p class="cabecalho__sub">Para shows, imprensa e projetos.</p>
+  </header>
+
+  <div class="contato">
+    <section class="card contato__caixa">
+      <h2 class="contato__titulo">E-mail</h2>
+      <p class="contato__texto">
+        <a class="contato__email" href={`mailto:${EMAIL}`}>{EMAIL}</a>
+      </p>
+      <p class="mono contato__dica">Prefere escrever direto? Use o botão acima.</p>
+    </section>
+
+    <section class="card contato__caixa">
+      <h2 class="contato__titulo">Redes</h2>
+      <ul class="list-void contato__redes">
+        {
+          REDES.map((rede) => (
+            <li>
+              <a class="btn btn--ghost" href={rede.url} target="_blank" rel="noopener noreferrer">
+                {rede.nome}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .cabecalho {
+    padding-block: var(--sp-6) var(--sp-5);
+  }
+
+  .cabecalho h1 {
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+  }
+
+  .cabecalho__sub {
+    margin: 0;
+    color: var(--text-muted);
+  }
+
+  .contato {
+    display: grid;
+    gap: var(--sp-4);
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+
+  .contato__caixa {
+    padding: var(--sp-5);
+  }
+
+  .contato__titulo {
+    font-size: var(--fs-lg);
+    color: var(--accent-2);
+  }
+
+  .contato__email {
+    font-family: var(--font-mono);
+    font-size: var(--fs-lg);
+  }
+
+  .contato__dica {
+    margin: 0;
+  }
+
+  .contato__redes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+  }
+</style>

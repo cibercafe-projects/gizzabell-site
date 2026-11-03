@@ -1,0 +1,68 @@
+---
+import AdminLayout from '~/layouts/AdminLayout.astro';
+import { counterStore } from '~/lib/content/file-counter.store';
+import { postRepository } from '~/lib/content/file-post.repository';
+
+const ranking = await counterStore.ranking();
+const posts = await postRepository.list({ incluirPrivados: true });
+const nomes = new Map(posts.map((p) => [p.slug, p.nome]));
+---
+
+<AdminLayout titulo="Cliques">
+  <h1 class="titulo neon-text">Cliques</h1>
+  <p class="sub">Ranking de popularidade por post — é isso que define o tamanho dos tiles no mosaico.</p>
+
+  {
+    ranking.length === 0 ? (
+      <p class="empty">Nenhum clique registrado ainda.</p>
+    ) : (
+      <table class="tabela">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Post</th>
+            <th>Cliques</th>
+          </tr>
+        </thead>
+        <tbody>
+          {ranking.map((item) => (
+            <tr>
+              <td class="mono">{item.posicao}</td>
+              <td>{nomes.get(item.slug) ?? item.slug}</td>
+              <td class="mono">{item.cliques}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )
+  }
+</AdminLayout>
+
+<style>
+  .titulo {
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+  }
+
+  .sub {
+    color: var(--text-muted);
+  }
+
+  .tabela {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+  }
+
+  .tabela th,
+  .tabela td {
+    text-align: left;
+    padding: var(--sp-2) var(--sp-3);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .tabela th {
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+</style>

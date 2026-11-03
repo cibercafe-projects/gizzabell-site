@@ -1,0 +1,185 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { agendaRepository } from '~/lib/content/file-agenda.repository';
+
+const eventos = await agendaRepository.list();
+const futuros = eventos.filter((e) => e.futuro);
+const passados = eventos.filter((e) => !e.futuro).reverse();
+---
+
+<BaseLayout titulo="Agenda — Gizza Bell" descricao="Shows, feiras e eventos da Gizza Bell.">
+  <header class="cabecalho">
+    <h1 class="neon-text">Agenda</h1>
+    <p class="cabecalho__sub">Shows, feiras, workshops e lançamentos.</p>
+  </header>
+
+  <section class="bloco">
+    <h2 class="bloco__titulo">Próximos</h2>
+    {
+      futuros.length === 0 ? (
+        <p class="empty">Nenhum evento agendado no momento.</p>
+      ) : (
+        <ul class="eventos list-void">
+          {futuros.map((evento) => (
+            <li class="evento card">
+              <div class="evento__capa">
+                {evento.cartaz ? (
+                  <img
+                    src={evento.cartaz.url}
+                    alt={`Cartaz de ${evento.titulo}`}
+                    width={evento.cartaz.largura ?? undefined}
+                    height={evento.cartaz.altura ?? undefined}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : (
+                  <span class="evento__vazio" aria-hidden="true">
+                    ◈
+                  </span>
+                )}
+              </div>
+              <div class="evento__texto">
+                <p class="mono evento__data">{evento.data}</p>
+                <h3 class="evento__titulo">{evento.titulo}</h3>
+                {(evento.local || evento.cidade) && (
+                  <p class="evento__local">
+                    {[evento.local, evento.cidade].filter(Boolean).join(' · ')}
+                  </p>
+                )}
+                {evento.descricao && <p class="evento__descricao">{evento.descricao}</p>}
+                {evento.links.length > 0 && (
+                  <p class="evento__links">
+                    {evento.links.map((link) => (
+                      <a class="btn btn--ghost" href={link.url} target="_blank" rel="noopener noreferrer">
+                        {link.rotulo}
+                      </a>
+                    ))}
+                  </p>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </section>
+
+  {
+    passados.length > 0 && (
+      <section class="bloco">
+        <h2 class="bloco__titulo">Anteriores</h2>
+        <ul class="eventos list-void">
+          {passados.map((evento) => (
+            <li class="evento card evento--passado">
+              <div class="evento__texto">
+                <p class="mono evento__data">{evento.data}</p>
+                <h3 class="evento__titulo">{evento.titulo}</h3>
+                {(evento.local || evento.cidade) && (
+                  <p class="evento__local">{[evento.local, evento.cidade].filter(Boolean).join(' · ')}</p>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .cabecalho {
+    padding-block: var(--sp-6) var(--sp-5);
+  }
+
+  .cabecalho h1 {
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+  }
+
+  .cabecalho__sub {
+    margin: 0;
+    color: var(--text-muted);
+  }
+
+  .bloco {
+    margin-bottom: var(--sp-6);
+  }
+
+  .bloco__titulo {
+    font-family: var(--font-mono);
+    font-size: var(--fs-lg);
+    letter-spacing: 0.08em;
+    color: var(--accent-2);
+  }
+
+  .eventos {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+  }
+
+  .evento {
+    display: grid;
+    gap: var(--sp-4);
+    grid-template-columns: 1fr;
+    padding: var(--sp-4);
+  }
+
+  @media (min-width: 700px) {
+    .evento {
+      grid-template-columns: 200px 1fr;
+    }
+  }
+
+  .evento--passado {
+    opacity: 0.72;
+  }
+
+  .evento__capa {
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+  }
+
+  .evento__capa img {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+  }
+
+  .evento__vazio {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 3 / 4;
+    color: var(--line-strong);
+    font-size: 2rem;
+  }
+
+  .evento__data {
+    margin: 0;
+    color: var(--accent);
+  }
+
+  .evento__titulo {
+    margin: var(--sp-1) 0;
+  }
+
+  .evento__local {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: var(--fs-sm);
+  }
+
+  .evento__descricao {
+    margin: var(--sp-2) 0 0;
+    color: var(--text-muted);
+  }
+
+  .evento__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin: var(--sp-3) 0 0;
+  }
+</style>

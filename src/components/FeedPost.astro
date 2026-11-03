@@ -1,0 +1,182 @@
+---
+import type { Midia, Post } from '~/lib/content/types';
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+const midias: Midia[] = post.midias;
+const ehVideo = post.formato === 'video';
+---
+
+<article class="post">
+  {
+    ehVideo && post.poster ? (
+      <div class="post__video">
+        <video
+          controls
+          preload="none"
+          poster={post.poster.url}
+          width={post.poster.largura ?? undefined}
+          height={post.poster.altura ?? undefined}
+          src={post.midias[0]?.url}
+        />
+      </div>
+    ) : midias.length > 1 ? (
+      <div class="carrossel" data-carrossel>
+        <div class="carrossel__trilho" data-carrossel-trilho>
+          {midias.map((midia, i) => (
+            <img
+              src={midia.url}
+              alt={`${post.nome} — imagem ${i + 1} de ${midias.length}`}
+              width={midia.largura ?? undefined}
+              height={midia.altura ?? undefined}
+              loading="lazy"
+              decoding="async"
+            />
+          ))}
+        </div>
+        <button type="button" class="carrossel__nav carrossel__nav--anterior" data-carrossel-anterior aria-label="Imagem anterior">
+          ‹
+        </button>
+        <button type="button" class="carrossel__nav carrossel__nav--proximo" data-carrossel-proximo aria-label="Próxima imagem">
+          ›
+        </button>
+        <p class="carrossel__indicador" data-carrossel-indicador aria-live="polite">
+          {midias.length} mídias
+        </p>
+      </div>
+    ) : (
+      <a class="post__link" href={post.url}>
+        {midias[0] && (
+          <img
+            src={midias[0].url}
+            alt={post.nome}
+            width={midias[0].largura ?? undefined}
+            height={midias[0].altura ?? undefined}
+            loading="lazy"
+            decoding="async"
+          />
+        )}
+      </a>
+    )
+  }
+
+  <div class="post__texto">
+    <h2 class="post__titulo">
+      <a href={post.url}>{post.nome}</a>
+    </h2>
+    <p class="post__meta mono">
+      {post.data} · {post.categoria}
+    </p>
+    {post.resumo && <p class="post__resumo">{post.resumo}</p>}
+  </div>
+</article>
+
+<style>
+  .post {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    padding-block: var(--sp-4);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .post__link img {
+    width: 100%;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+  }
+
+  .post__video video {
+    width: 100%;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+  }
+
+  .post__titulo {
+    margin: 0;
+    font-size: var(--fs-lg);
+  }
+
+  .post__titulo a {
+    color: var(--text);
+  }
+
+  .post__meta {
+    margin: var(--sp-1) 0 0;
+    color: var(--accent-2);
+  }
+
+  .post__resumo {
+    margin: var(--sp-2) 0 0;
+    color: var(--text-muted);
+  }
+
+  .carrossel {
+    position: relative;
+  }
+
+  .carrossel__trilho {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+  }
+
+  .carrossel__trilho::-webkit-scrollbar {
+    display: none;
+  }
+
+  .carrossel__trilho img {
+    flex: 0 0 100%;
+    scroll-snap-align: center;
+    width: 100%;
+    object-fit: cover;
+  }
+
+  .carrossel__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--line-strong);
+    background: color-mix(in srgb, var(--bg) 72%, transparent);
+    color: var(--text);
+    cursor: pointer;
+    font-size: var(--fs-lg);
+    line-height: 1;
+  }
+
+  .carrossel__nav:hover {
+    border-color: var(--accent);
+    box-shadow: var(--glow-accent);
+  }
+
+  .carrossel__nav--anterior {
+    left: var(--sp-2);
+  }
+
+  .carrossel__nav--proximo {
+    right: var(--sp-2);
+  }
+
+  .carrossel__indicador {
+    position: absolute;
+    right: var(--sp-3);
+    bottom: var(--sp-3);
+    margin: 0;
+    padding: 2px var(--sp-2);
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--bg) 72%, transparent);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+  }
+</style>

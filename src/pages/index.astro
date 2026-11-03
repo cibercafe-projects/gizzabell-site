@@ -1,0 +1,153 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Mosaic from '~/components/Mosaic.astro';
+import FeedList from '~/components/FeedList.astro';
+import { postRepository } from '~/lib/content/file-post.repository';
+import { counterStore } from '~/lib/content/file-counter.store';
+import { ordenarPorData, ordenarPorPopularidade, tamanhoPorPosicao } from '~/lib/content/popularity';
+import type { OrdemHome } from '~/lib/content/popularity';
+import type { Post } from '~/lib/content/types';
+
+const ORDEM_PADRAO: OrdemHome = 'data';
+
+function lerOrdem(valor: string | null): OrdemHome {
+  return valor === 'pasta' || valor === 'popularidade' ? valor : ORDEM_PADRAO;
+}
+
+const ordem = lerOrdem(Astro.url.searchParams.get('ordem'));
+
+const todos = await postRepository.list();
+const ranking = await counterStore.ranking();
+const cliques = new Map(ranking.map((r) => [r.slug, r.cliques]));
+
+// posição no ranking de popularidade define o tamanho do tile, de forma estável
+const posicaoNoRanking = new Map<string, number>();
+ranking.forEach((r, i) => posicaoNoRanking.set(r.slug, i));
+todos.forEach((p) => {
+  if (!posicaoNoRanking.has(p.slug)) posicaoNoRanking.set(p.slug, posicaoNoRanking.size);
+});
+
+let posts: Post[];
+if (ordem === 'popularidade') {
+  posts = ordenarPorPopularidade(todos, cliques);
+} else if (ordem === 'pasta') {
+  posts = await postRepository.orderByPasta(todos);
+} else {
+  posts = ordenarPorData(todos);
+}
+
+const comTamanho = posts.map((post) => ({
+  post,
+  tamanho: tamanhoPorPosicao(posicaoNoRanking.get(post.slug) ?? 999),
+}));
+
+const ordenacoes: Array<{ id: OrdemHome; nome: string }> = [
+  { id: 'data', nome: 'Data' },
+  { id: 'pasta', nome: 'Pasta' },
+  { id: 'popularidade', nome: 'Popularidade' },
+];
+---
+
+<BaseLayout titulo="Gizza Bell — artista independente" descricao="Obras, shows e lançamentos da Gizza Bell.">
+  <section class="hero">
+    <h1 class="hero__titulo">
+      <span class="neon-text">GIZZA</span><span class="hero__bell">BELL</span>
+    </h1>
+    <p class="hero__sub">Artista independente — imagem, som e trabalho em movimento.</p>
+  </section>
+
+  <section class="controles" aria-label="Controles do acervo">
+    <div class="controles__grupo" role="group" aria-label="Visualização">
+      <button type="button" class="btn" data-modo="mosaico" aria-pressed="true">Mosaico</button>
+      <button type="button" class="btn" data-modo="feed" aria-pressed="false">Feed</button>
+    </div>
+
+    <div class="controles__grupo" role="group" aria-label="Ordenação">
+      {ordenacoes.map((o) => <button type="button" class="btn btn--ghost" data-ordem={o.id}>{o.nome}</button>)}
+    </div>
+
+    <div class="controles__busca">
+      <label class="visually-hidden" for="busca-home">Buscar posts pelo nome ou descrição</label>
+      <input
+        id="busca-home"
+        class="input"
+        type="search"
+        placeholder="Buscar posts…"
+        autocomplete="off"
+        data-busca-home
+      />
+    </div>
+  </section>
+
+  <p class="status" data-status aria-live="polite" hidden></p>
+
+  {
+    posts.length === 0 ? (
+      <p class="empty">
+        Ainda não há posts publicados. Assim que o primeiro post for criado, ele aparece aqui.
+      </p>
+    ) : (
+      <>
+        <div data-visualizacao="mosaico">
+          <Mosaic posts={comTamanho} />
+        </div>
+        <div data-visualizacao="feed" hidden>
+          <FeedList posts={posts} />
+        </div>
+      </>
+    )
+  }
+  <script src="../scripts/home-view.ts"></script>
+  <script src="../scripts/home-search.ts"></script>
+  <script src="../scripts/carousel.ts"></script>
+</BaseLayout>
+
+<style>
+  .hero {
+    padding-block: var(--sp-6) var(--sp-4);
+  }
+
+  .hero__titulo {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xl);
+    letter-spacing: 0.1em;
+  }
+
+  .hero__bell {
+    color: var(--accent-2);
+    text-shadow: var(--glow-cyan);
+  }
+
+  .hero__sub {
+    margin: var(--sp-2) 0 0;
+    color: var(--text-muted);
+  }
+
+  .controles {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-3);
+    padding-block: var(--sp-3) var(--sp-5);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: var(--sp-4);
+  }
+
+  .controles__grupo {
+    display: flex;
+    gap: var(--sp-2);
+  }
+
+  .controles__busca {
+    flex: 1 1 220px;
+    min-width: 180px;
+  }
+
+  .status {
+    margin: var(--sp-3) 0;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+  }
+</style>

@@ -1,0 +1,139 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import FeedPost from '~/components/FeedPost.astro';
+import { postRepository } from '~/lib/content/file-post.repository';
+
+const { slug } = Astro.params;
+const post = slug ? await postRepository.getBySlug(slug) : null;
+
+if (!post) {
+  return Astro.rewrite('/404');
+}
+
+const todos = await postRepository.list();
+const indice = todos.findIndex((p) => p.slug === post.slug);
+const anterior = indice > 0 ? todos[indice - 1] : null;
+const proximo = indice >= 0 && indice < todos.length - 1 ? todos[indice + 1] : null;
+---
+
+<BaseLayout titulo={`${post.nome} — Gizza Bell`} descricao={post.resumo} imagem={post.capa?.url}>
+  <article class="detalhe">
+    <p class="detalhe__voltar"><a href="/">← Voltar para a página principal</a></p>
+
+    <div class="detalhe__grade">
+      <div class="detalhe__midia">
+        <FeedPost post={post} />
+      </div>
+
+      <aside class="detalhe__lateral">
+        <p class="mono">Ficha</p>
+        <dl class="detalhe__lista">
+          <dt>Nome</dt>
+          <dd>{post.nome}</dd>
+          <dt>Data</dt>
+          <dd>{post.data}</dd>
+          <dt>Categoria</dt>
+          <dd>{post.categoria}</dd>
+          <dt>Pasta</dt>
+          <dd class="mono">{post.pasta}</dd>
+          <dt>Mídias</dt>
+          <dd>{post.midias.length}</dd>
+        </dl>
+
+        {
+          post.tags.length > 0 && (
+            <ul class="list-void detalhe__tags">
+              {post.tags.map((tag) => (
+                <li class="mono">#{tag}</li>
+              ))}
+            </ul>
+          )
+        }
+
+        <nav class="detalhe__nav" aria-label="Posts vizinhos">
+          {anterior && <a href={anterior.url}>← {anterior.nome}</a>}
+          {proximo && <a href={proximo.url}>{proximo.nome} →</a>}
+        </nav>
+      </aside>
+    </div>
+
+    {
+      post.descricaoHtml && (
+        // HTML vem do nosso renderizador de Markdown: HTML cru é descartado e
+        // links perigosos são neutralizados antes de chegar aqui.
+        <section
+          class="detalhe__descricao prose"
+          set:html={post.descricaoHtml}
+        />
+      )
+    }
+  </article>
+</BaseLayout>
+
+<style>
+  .detalhe {
+    padding-block: var(--sp-5);
+  }
+
+  .detalhe__voltar {
+    margin-bottom: var(--sp-4);
+  }
+
+  .detalhe__grade {
+    display: grid;
+    gap: var(--sp-5);
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 900px) {
+    .detalhe__grade {
+      grid-template-columns: minmax(0, 1fr) 280px;
+    }
+  }
+
+  .detalhe__lateral {
+    align-self: start;
+    padding: var(--sp-4);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  .detalhe__lista {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--sp-1) var(--sp-3);
+    margin: 0 0 var(--sp-3);
+    font-size: var(--fs-sm);
+  }
+
+  .detalhe__lista dt {
+    color: var(--text-muted);
+  }
+
+  .detalhe__lista dd {
+    margin: 0;
+  }
+
+  .detalhe__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    color: var(--accent-2);
+  }
+
+  .detalhe__nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+    margin-top: var(--sp-4);
+    font-size: var(--fs-sm);
+  }
+
+  .detalhe__descricao {
+    max-width: 62ch;
+    margin-top: var(--sp-5);
+    padding-top: var(--sp-4);
+    border-top: 1px solid var(--line);
+  }
+</style>

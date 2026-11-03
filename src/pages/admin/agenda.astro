@@ -1,0 +1,185 @@
+---
+import AdminLayout from '~/layouts/AdminLayout.astro';
+import { agendaRepository } from '~/lib/content/file-agenda.repository';
+
+const eventos = await agendaRepository.list();
+const editar = Astro.url.searchParams.get('editar');
+const emEdicao = editar ? (eventos.find((e) => e.slug === editar) ?? null) : null;
+const ok = Astro.url.searchParams.get('ok');
+const erro = Astro.url.searchParams.get('erro');
+---
+
+<AdminLayout titulo="Agenda">
+  <h1 class="titulo neon-text">Agenda</h1>
+
+  {ok && <p class="alerta alerta--ok">Salvo.</p>}
+  {erro && <p class="alerta" role="alert">{erro}</p>}
+
+  <div class="grade">
+    <section class="card caixa">
+      <h2 class="caixa__titulo">{emEdicao ? `Editar: ${emEdicao.titulo}` : 'Novo evento'}</h2>
+
+      <form method="post" action="/admin/salvar-evento" enctype="multipart/form-data">
+        <input type="hidden" name="slug" value={emEdicao?.slug ?? ''} />
+
+        <label class="field">
+          <span>Título</span>
+          <input class="input" type="text" name="titulo" required value={emEdicao?.titulo ?? ''} />
+        </label>
+
+        <label class="field">
+          <span>Data</span>
+          <input class="input" type="date" name="data" required value={emEdicao?.data ?? ''} />
+        </label>
+
+        <label class="field">
+          <span>Local</span>
+          <input class="input" type="text" name="local" value={emEdicao?.local ?? ''} />
+        </label>
+
+        <label class="field">
+          <span>Cidade</span>
+          <input class="input" type="text" name="cidade" value={emEdicao?.cidade ?? ''} />
+        </label>
+
+        <label class="field">
+          <span>Descrição</span>
+          <textarea class="textarea" name="descricao" rows="5">{emEdicao?.descricao ?? ''}</textarea>
+        </label>
+
+        <label class="field">
+          <span>Links (um "rótulo | url" por linha)</span>
+          <textarea class="textarea" name="links" rows="3" placeholder="Ingressos | https://…">
+{(emEdicao?.links ?? []).map((l) => `${l.rotulo} | ${l.url}`).join('\n')}</textarea
+          >
+        </label>
+
+        <label class="field">
+          <span>Cartaz / folder (opcional)</span>
+          <input class="input" type="file" name="cartaz" accept="image/*" />
+        </label>
+
+        <label class="check">
+          <input type="checkbox" name="divulgar_email" value="1" checked={emEdicao?.divulgarEmail ?? false} />
+          <span>Marcar para divulgar por e-mail (futuro)</span>
+        </label>
+
+        <button type="submit" class="btn">Salvar evento</button>
+      </form>
+    </section>
+
+    <section class="caixa">
+      <h2 class="caixa__titulo">Eventos</h2>
+      {
+        eventos.length === 0 ? (
+          <p class="empty">Nenhum evento ainda.</p>
+        ) : (
+          <ul class="list-void lista">
+            {eventos.map((evento) => (
+              <li class="lista__item">
+                <div>
+                  <p class="lista__nome">{evento.titulo}</p>
+                  <p class="mono lista__meta">
+                    {evento.data}
+                    {evento.local && ` · ${evento.local}`}
+                    {evento.futuro ? ' · futuro' : ' · passado'}
+                  </p>
+                </div>
+                <div class="lista__acoes">
+                  <a class="btn btn--ghost" href={`/admin/agenda?editar=${evento.slug}`}>
+                    Editar
+                  </a>
+                  <form method="post" action="/admin/remover-evento">
+                    <input type="hidden" name="slug" value={evento.slug} />
+                    <button type="submit" class="btn btn--ghost">Remover</button>
+                  </form>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </section>
+  </div>
+</AdminLayout>
+
+<style>
+  .titulo {
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+  }
+
+  .alerta {
+    padding: var(--sp-3);
+    border: 1px solid var(--neon-magenta);
+    border-radius: var(--radius);
+    color: var(--neon-magenta);
+  }
+
+  .alerta--ok {
+    border-color: var(--neon-lime);
+    color: var(--neon-lime);
+  }
+
+  .grade {
+    display: grid;
+    gap: var(--sp-4);
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  @media (min-width: 960px) {
+    .grade {
+      grid-template-columns: minmax(0, 420px) 1fr;
+    }
+  }
+
+  .caixa {
+    padding: var(--sp-4);
+  }
+
+  .caixa__titulo {
+    font-size: var(--fs-lg);
+    color: var(--accent-2);
+    margin-bottom: var(--sp-3);
+  }
+
+  .check {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    min-height: var(--tap-min);
+    margin-bottom: var(--sp-4);
+    font-size: var(--fs-sm);
+  }
+
+  .lista {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .lista__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    padding-block: var(--sp-3);
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+
+  .lista__nome {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .lista__meta {
+    margin: 0;
+  }
+
+  .lista__acoes {
+    display: flex;
+    gap: var(--sp-2);
+    align-items: center;
+  }
+</style>

@@ -1,0 +1,23 @@
+---
+import FeedPost from '~/components/FeedPost.astro';
+import type { Post } from '~/lib/content/types';
+
+interface Props {
+  posts: Post[];
+}
+
+const { posts } = Astro.props;
+---
+
+<div class="feed" data-feed>
+  {posts.map((post) => <FeedPost post={post} />)}
+</div>
+
+<style>
+  .feed {
+    display: flex;
+    flex-direction: column;
+    max-width: 560px;
+    margin-inline: auto;
+  }
+</style>

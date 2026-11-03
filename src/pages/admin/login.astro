@@ -1,0 +1,83 @@
+---
+import '../../styles/global.css';
+
+const erro = Astro.url.searchParams.get('erro');
+const destino = Astro.url.searchParams.get('destino') ?? '/admin';
+
+const MENSAGENS: Record<string, string> = {
+  credenciais: 'Usuário ou senha incorretos.',
+  bloqueado: 'Muitas tentativas. Tente de novo em alguns minutos.',
+  expirada: 'Sua sessão expirou. Entre novamente.',
+};
+---
+
+<!doctype html>
+<html lang="pt-BR" data-tema="escuro">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Entrar — Backoffice</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body class="login">
+    <main class="login__caixa">
+      <h1 class="login__titulo"><span class="neon-text">◈</span> Backoffice</h1>
+      <p class="login__sub">Área restrita à artista.</p>
+
+      {erro && <p class="login__erro" role="alert">{MENSAGENS[erro] ?? 'Não foi possível entrar.'}</p>}
+
+      <form method="post" action="/admin/entrar">
+        <input type="hidden" name="destino" value={destino} />
+        <label class="field">
+          <span>Usuário</span>
+          <input class="input" type="text" name="usuario" autocomplete="username" required />
+        </label>
+        <label class="field">
+          <span>Senha</span>
+          <input class="input" type="password" name="senha" autocomplete="current-password" required />
+        </label>
+        <button type="submit" class="btn">Entrar</button>
+      </form>
+    </main>
+  </body>
+</html>
+
+<style>
+  .login {
+    display: grid;
+    place-items: center;
+    min-height: 100dvh;
+    padding: var(--sp-4);
+  }
+
+  .login__caixa {
+    width: 100%;
+    max-width: 380px;
+    padding: var(--sp-5);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-card), var(--glow-soft);
+  }
+
+  .login__titulo {
+    margin: 0;
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+  }
+
+  .login__sub {
+    margin: var(--sp-2) 0 var(--sp-5);
+    color: var(--text-muted);
+  }
+
+  .login__erro {
+    padding: var(--sp-3);
+    margin: 0 0 var(--sp-4);
+    border: 1px solid var(--neon-magenta);
+    border-radius: var(--radius);
+    color: var(--neon-magenta);
+    font-size: var(--fs-sm);
+  }
+</style>

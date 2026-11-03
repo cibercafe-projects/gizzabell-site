@@ -1,0 +1,20 @@
+# Normaliza arquivos de texto para LF (o servidor roda Linux).
+* text=auto eol=lf
+
+# Mídia nunca deve ser convertida.
+*.webp binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.avif binary
+*.gif binary
+*.mp4 binary
+*.m4v binary
+*.webm binary
+*.mov binary
+*.mp3 binary
+*.m4a binary
+*.wav binary
+*.ogg binary
+*.flac binary
+*.aac binary

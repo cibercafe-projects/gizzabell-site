@@ -1,0 +1,241 @@
+---
+const LINKS = [
+  { href: '/', label: 'Página principal' },
+  { href: '/timeline', label: 'Timeline' },
+  { href: '/agenda', label: 'Agenda' },
+  { href: '/discografia', label: 'Discografia' },
+];
+
+const atual = Astro.url.pathname;
+const ehAtivo = (href: string): boolean =>
+  href === '/' ? atual === '/' : atual.startsWith(href);
+---
+
+<header class="barra">
+  <div class="barra__conteudo container">
+    <a class="marca" href="/">
+      <span class="marca__glifo" aria-hidden="true">◈</span>
+      <span class="marca__texto">GIZZA<span class="marca__bell">BELL</span></span>
+    </a>
+
+    <nav class="nav" aria-label="Principal">
+      <ul class="nav__lista list-void">
+        {
+          LINKS.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                class="nav__link"
+                aria-current={ehAtivo(link.href) ? 'page' : undefined}
+              >
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="acoes">
+      <button
+        type="button"
+        class="btn btn--ghost lupa"
+        data-abre-busca
+        aria-label="Abrir busca"
+        aria-haspopup="dialog"
+        aria-controls="busca-global"
+      >
+        <span aria-hidden="true">⌕</span>
+      </button>
+      <button
+        type="button"
+        class="btn btn--ghost lupa"
+        data-alterna-tema
+        aria-label="Alternar tema claro e escuro"
+      >
+        <span aria-hidden="true" data-glifo-tema>◐</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<dialog id="busca-global" class="busca" data-busca-global aria-label="Busca">
+  <div class="busca__caixa">
+    <label class="visually-hidden" for="busca-global-campo">Buscar no site</label>
+    <input
+      id="busca-global-campo"
+      class="input busca__campo"
+      type="search"
+      placeholder="Buscar posts, eventos, lançamentos e faixas…"
+      autocomplete="off"
+      data-busca-global-campo
+    />
+    <p class="busca__status mono" data-busca-global-status aria-live="polite"></p>
+    <ul class="busca__resultados list-void" data-busca-global-resultados></ul>
+    <button type="button" class="btn btn--ghost busca__fechar" data-busca-global-fechar>Fechar</button>
+  </div>
+</dialog>
+
+<style>
+  .barra {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: var(--z-bar);
+    height: var(--bar-h);
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+    box-shadow: var(--shadow-bar);
+  }
+
+  .barra__conteudo {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+  }
+
+  .marca {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--text);
+    text-decoration: none;
+    flex: 0 0 auto;
+  }
+
+  .marca__glifo {
+    color: var(--accent);
+    text-shadow: var(--glow-accent-strong);
+  }
+
+  .marca__bell {
+    color: var(--accent-2);
+    text-shadow: var(--glow-cyan);
+  }
+
+  .nav {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .nav__lista {
+    display: flex;
+    gap: var(--sp-1);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .nav__lista::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
+    padding: 0 var(--sp-3);
+    border-radius: var(--radius-pill);
+    color: var(--text-muted);
+    font-size: var(--fs-sm);
+    white-space: nowrap;
+    transition: var(--transition);
+  }
+
+  .nav__link:hover {
+    color: var(--text);
+    text-decoration: none;
+    box-shadow: inset 0 -1px 0 var(--accent);
+  }
+
+  .nav__link[aria-current='page'] {
+    color: var(--text);
+    box-shadow: var(--glow-accent), inset 0 -2px 0 var(--accent);
+  }
+
+  .acoes {
+    display: flex;
+    gap: var(--sp-2);
+    flex: 0 0 auto;
+  }
+
+  .lupa {
+    padding-inline: var(--sp-3);
+    font-size: var(--fs-lg);
+    line-height: 1;
+  }
+
+  @media (max-width: 640px) {
+    .marca__texto {
+      display: none;
+    }
+    .nav__link {
+      padding-inline: var(--sp-2);
+      font-size: var(--fs-xs);
+    }
+  }
+
+  /* busca global ---------------------------------------------------------- */
+
+  .busca {
+    width: min(560px, calc(100vw - 2rem));
+    padding: 0;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-card), var(--glow-soft);
+  }
+
+  .busca::backdrop {
+    background: color-mix(in srgb, var(--bg) 78%, transparent);
+    backdrop-filter: blur(4px);
+  }
+
+  .busca__caixa {
+    padding: var(--sp-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+  }
+
+  .busca__status {
+    margin: 0;
+    min-height: 1rem;
+  }
+
+  .busca__resultados {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+
+  .busca__resultados a {
+    display: block;
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .busca__resultados a:hover,
+  .busca__resultados a:focus-visible {
+    border-color: var(--accent);
+    box-shadow: var(--glow-accent);
+    text-decoration: none;
+  }
+
+  .busca__tipo {
+    color: var(--accent-2);
+  }
+
+  .busca__fechar {
+    align-self: flex-end;
+  }
+</style>

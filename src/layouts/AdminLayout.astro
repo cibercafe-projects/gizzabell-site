@@ -1,0 +1,89 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  titulo: string;
+}
+
+const { titulo } = Astro.props;
+---
+
+<!doctype html>
+<html lang="pt-BR" data-tema="escuro">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{titulo} — Backoffice</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body class="admin">
+    <header class="admin__barra">
+      <div class="container admin__conteudo">
+        <a class="admin__marca" href="/admin">◈ Backoffice</a>
+        <nav class="admin__nav" aria-label="Administração">
+          <a href="/admin">Painel</a>
+          <a href="/admin/posts">Posts</a>
+          <a href="/admin/agenda">Agenda</a>
+          <a href="/admin/discografia">Discografia</a>
+          <a href="/admin/estatisticas">Cliques</a>
+          <a href="/" target="_blank" rel="noopener">Ver site ↗</a>
+        </nav>
+        <form method="post" action="/admin/logout">
+          <button type="submit" class="btn btn--ghost">Sair</button>
+        </form>
+      </div>
+    </header>
+
+    <main class="container admin__conteudo-principal">
+      <slot />
+    </main>
+  </body>
+</html>
+
+<style>
+  .admin {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .admin__barra {
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+
+  .admin__conteudo {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+    min-height: var(--bar-h);
+    flex-wrap: wrap;
+  }
+
+  .admin__marca {
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    text-shadow: var(--glow-accent);
+  }
+
+  .admin__nav {
+    display: flex;
+    gap: var(--sp-3);
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+  }
+
+  .admin__nav a {
+    color: var(--text-muted);
+    font-size: var(--fs-sm);
+  }
+
+  .admin__nav a:hover {
+    color: var(--text);
+  }
+
+  .admin__conteudo-principal {
+    padding-block: var(--sp-5) var(--sp-7);
+  }
+</style>

@@ -1,0 +1,22 @@
+# Caddy — proxy reverso com TLS automático.
+# O Node responde em 127.0.0.1:4321; o Caddy termina TLS e faz o cache de estático.
+
+gizzabell.com {
+	encode zstd gzip
+
+	# mídia: cache longo e imutável (o conteúdo muda por versionamento)
+	@files path /files/*
+	header @files Cache-Control "public, max-age=31536000, immutable"
+
+	# backoffice: nunca cacheado
+	@admin path /admin*
+	header @admin Cache-Control "no-store"
+
+	reverse_proxy 127.0.0.1:4321 {
+		header_up X-Forwarded-For {remote_host}
+	}
+
+	log {
+		output file /var/log/caddy/gizzabell.log
+	}
+}

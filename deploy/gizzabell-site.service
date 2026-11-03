@@ -1,0 +1,21 @@
+[Unit]
+Description=Gizza Bell — site da artista
+After=network.target
+
+[Service]
+Type=simple
+User=gizzabell
+Group=gizzabell
+WorkingDirectory=/srv/gizzabell-site
+EnvironmentFile=/srv/gizzabell-site/.env
+Environment=NODE_ENV=production
+Environment=TZ=America/Sao_Paulo
+ExecStart=/usr/bin/node ./dist/server/entry.mjs
+Restart=always
+RestartSec=5
+
+# O runtime lê content/, files/ e data/ a partir do WorkingDirectory.
+# O processo não precisa de shell nem de permissões extras.
+
+[Install]
+WantedBy=multi-user.target

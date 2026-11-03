@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout titulo="Não encontrado — Gizza Bell" descricao="Página não encontrada." noindex>
+  <section class="erro">
+    <p class="erro__codigo mono">404</p>
+    <h1 class="neon-text">Nada por aqui</h1>
+    <p class="erro__texto">
+      O conteúdo que você procura não existe, foi removido ou nunca foi publicado.
+    </p>
+    <a class="btn" href="/">← Voltar para a página principal</a>
+  </section>
+</BaseLayout>
+
+<style>
+  .erro {
+    padding-block: var(--sp-8) var(--sp-7);
+    text-align: center;
+  }
+
+  .erro__codigo {
+    margin: 0;
+    font-size: var(--fs-xl);
+    color: var(--accent);
+    text-shadow: var(--glow-accent-strong);
+  }
+
+  .erro__texto {
+    margin: var(--sp-3) auto var(--sp-5);
+    max-width: 44ch;
+    color: var(--text-muted);
+  }
+</style>

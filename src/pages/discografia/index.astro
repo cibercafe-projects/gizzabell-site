@@ -1,0 +1,131 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { releaseRepository } from '~/lib/content/file-release.repository';
+
+const lancamentos = await releaseRepository.listPorRecencia();
+---
+
+<BaseLayout titulo="Discografia — Gizza Bell" descricao="Álbuns, EPs, singles e compilações da Gizza Bell, com tracklist e letras.">
+  <header class="cabecalho">
+    <h1 class="neon-text">Discografia</h1>
+    <p class="cabecalho__sub">Do lançamento mais recente ao mais antigo.</p>
+  </header>
+
+  {
+    lancamentos.length === 0 ? (
+      <p class="empty">Nenhum lançamento publicado ainda.</p>
+    ) : (
+      <ul class="lancamentos list-void">
+        {lancamentos.map((lancamento) => (
+          <li class="lancamento card">
+            <a class="lancamento__link" href={`/discografia/${lancamento.slug}`}>
+              <div class="lancamento__capa">
+                {lancamento.capa ? (
+                  <img
+                    src={lancamento.capa.url}
+                    alt={`Capa de ${lancamento.nome}`}
+                    width={lancamento.capa.largura ?? undefined}
+                    height={lancamento.capa.altura ?? undefined}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : (
+                  <span class="lancamento__vazio" aria-hidden="true">
+                    ◈
+                  </span>
+                )}
+              </div>
+              <div class="lancamento__texto">
+                <p class="mono lancamento__meta">
+                  {lancamento.tipo} · {lancamento.ano} · {lancamento.faixas.length} faixas
+                </p>
+                <h2 class="lancamento__titulo">{lancamento.nome}</h2>
+                {lancamento.descricao && <p class="lancamento__descricao">{lancamento.descricao}</p>}
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .cabecalho {
+    padding-block: var(--sp-6) var(--sp-5);
+  }
+
+  .cabecalho h1 {
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+  }
+
+  .cabecalho__sub {
+    margin: 0;
+    color: var(--text-muted);
+  }
+
+  .lancamentos {
+    display: grid;
+    gap: var(--sp-4);
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+
+  .lancamento__link {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .lancamento__link:hover {
+    text-decoration: none;
+  }
+
+  .lancamento__link:hover .lancamento__titulo {
+    color: var(--accent);
+    text-shadow: var(--glow-accent);
+  }
+
+  .lancamento__capa {
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+  }
+
+  .lancamento__capa img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+
+  .lancamento__vazio {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1 / 1;
+    color: var(--line-strong);
+    font-size: 2rem;
+  }
+
+  .lancamento__texto {
+    padding: var(--sp-3);
+  }
+
+  .lancamento__meta {
+    margin: 0;
+    color: var(--accent-2);
+  }
+
+  .lancamento__titulo {
+    margin: var(--sp-1) 0;
+    font-size: var(--fs-lg);
+  }
+
+  .lancamento__descricao {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: var(--fs-sm);
+  }
+</style>

@@ -1,0 +1,203 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { releaseRepository } from '~/lib/content/file-release.repository';
+
+const lancamentos = await releaseRepository.listPorRecencia();
+const editar = Astro.url.searchParams.get('editar');
+const emEdicao = editar ? (lancamentos.find((l) => l.slug === editar) ?? null) : null;
+const ok = Astro.url.searchParams.get('ok');
+const erro = Astro.url.searchParams.get('erro');
+
+const faixas = emEdicao?.faixas ?? [];
+---
+
+<AdminLayout titulo="Discografia">
+  <h1 class="titulo neon-text">Discografia</h1>
+
+  {ok && <p class="alerta alerta--ok">Salvo.</p>}
+  {erro && <p class="alerta" role="alert">{erro}</p>}
+
+  <div class="grade">
+    <section class="card caixa">
+      <h2 class="caixa__titulo">{emEdicao ? `Editar: ${emEdicao.nome}` : 'Novo lançamento'}</h2>
+
+      <form method="post" action="/admin/salvar-lancamento">
+        <input type="hidden" name="slug" value={emEdicao?.slug ?? ''} />
+
+        <label class="field">
+          <span>Nome</span>
+          <input class="input" type="text" name="nome" required value={emEdicao?.nome ?? ''} />
+        </label>
+
+        <label class="field">
+          <span>Tipo</span>
+          <select class="select" name="tipo" required>
+            {
+              ['album', 'ep', 'single', 'compilacao'].map((tipo) => (
+                <option value={tipo} selected={emEdicao?.tipo === tipo}>{tipo}</option>
+              ))
+            }
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Ano</span>
+          <input class="input" type="number" name="ano" min="1900" max="2100" required value={emEdicao?.ano ?? new Date().getFullYear()} />
+        </label>
+
+        <label class="field">
+          <span>Data de lançamento (opcional)</span>
+          <input class="input" type="date" name="data" value={emEdicao?.data ?? ''} />
+        </label>
+
+        <label class="field">
+          <span>Capa (caminho relativo a files/)</span>
+          <input class="input" type="text" name="capa" value={emEdicao?.capa?.caminho ?? ''} />
+        </label>
+
+        <label class="field">
+          <span>Descrição</span>
+          <textarea class="textarea" name="descricao" rows="3">{emEdicao?.descricao ?? ''}</textarea>
+        </label>
+
+        <fieldset class="campo-grupo">
+          <legend class="mono">Faixas</legend>
+          <p class="dica mono">
+            Uma faixa por bloco, no formato: título | arquivo de áudio (opcional) | duração
+            (opcional) | letra (opcional, em Markdown)
+          </p>
+          <textarea
+            class="textarea"
+            name="faixas"
+            rows="8"
+            placeholder="Lost | audio/neon/lost.mp3 | 3:42 | Letra em **Markdown**&#10;Halo | audio/neon/halo.mp3">{faixas
+              .map((f) => `${f.titulo} | ${f.audio?.caminho ?? ''} | ${f.duracao} | ${f.letra}`)
+              .join('\n')}</textarea
+          >
+        </fieldset>
+
+        <button type="submit" class="btn">Salvar lançamento</button>
+      </form>
+    </section>
+
+    <section class="caixa">
+      <h2 class="caixa__titulo">Lançamentos</h2>
+      {
+        lancamentos.length === 0 ? (
+          <p class="empty">Nenhum lançamento ainda.</p>
+        ) : (
+          <ul class="list-void lista">
+            {lancamentos.map((lancamento) => (
+              <li class="lista__item">
+                <div>
+                  <p class="lista__nome">{lancamento.nome}</p>
+                  <p class="mono lista__meta">
+                    {lancamento.tipo} · {lancamento.ano}
+                    {lancamento.data ? ` · ${lancamento.data}` : ''} · {lancamento.faixas.length} faixa(s)
+                  </p>
+                </div>
+                <div class="lista__acoes">
+                  <a class="btn btn--ghost" href={`/admin/discografia?editar=${lancamento.slug}`}>
+                    Editar
+                  </a>
+                  <form method="post" action="/admin/remover-lancamento">
+                    <input type="hidden" name="slug" value={lancamento.slug} />
+                    <button type="submit" class="btn btn--ghost">Remover</button>
+                  </form>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </section>
+  </div>
+</AdminLayout>
+
+<style>
+  .titulo {
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+  }
+
+  .alerta {
+    padding: var(--sp-3);
+    border: 1px solid var(--neon-magenta);
+    border-radius: var(--radius);
+    color: var(--neon-magenta);
+  }
+
+  .alerta--ok {
+    border-color: var(--neon-lime);
+    color: var(--neon-lime);
+  }
+
+  .grade {
+    display: grid;
+    gap: var(--sp-4);
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  @media (min-width: 960px) {
+    .grade {
+      grid-template-columns: minmax(0, 460px) 1fr;
+    }
+  }
+
+  .caixa {
+    padding: var(--sp-4);
+  }
+
+  .caixa__titulo {
+    font-size: var(--fs-lg);
+    color: var(--accent-2);
+    margin-bottom: var(--sp-3);
+  }
+
+  .campo-grupo {
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    padding: var(--sp-3);
+    margin-bottom: var(--sp-4);
+  }
+
+  .campo-grupo legend {
+    color: var(--accent-2);
+    padding-inline: var(--sp-2);
+  }
+
+  .dica {
+    margin: 0 0 var(--sp-2);
+  }
+
+  .lista {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .lista__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    padding-block: var(--sp-3);
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+
+  .lista__nome {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .lista__meta {
+    margin: 0;
+  }
+
+  .lista__acoes {
+    display: flex;
+    gap: var(--sp-2);
+    align-items: center;
+  }
+</style>

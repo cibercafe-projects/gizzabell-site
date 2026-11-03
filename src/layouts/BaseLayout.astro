@@ -1,0 +1,68 @@
+---
+import '../styles/global.css';
+import TopBar from '~/components/TopBar.astro';
+import BottomPlayer from '~/components/BottomPlayer.astro';
+
+interface Props {
+  titulo: string;
+  descricao?: string;
+  imagem?: string;
+  noindex?: boolean;
+}
+
+const { titulo, descricao = 'Gizza Bell — artista independente.', imagem, noindex = false } = Astro.props;
+
+const site = Astro.site?.toString() ?? 'http://localhost:4321';
+const url = new URL(Astro.url.pathname, site).toString();
+---
+
+<!doctype html>
+<html lang="pt-BR" data-tema="escuro">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titulo}</title>
+    <meta name="description" content={descricao} />
+    <meta name="generator" content={Astro.generator} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="canonical" href={url} />
+    <meta property="og:title" content={titulo} />
+    <meta property="og:description" content={descricao} />
+    <meta property="og:type" content="website" />
+    {imagem && <meta property="og:image" content={new URL(imagem, site).toString()} />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script is:inline>
+      // Aplica o tema antes da primeira pintura para não piscar.
+      (function () {
+        try {
+          const salvo = localStorage.getItem('gizzabell:tema');
+          const tema =
+            salvo || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'claro' : 'escuro');
+          document.documentElement.dataset.tema = tema;
+        } catch {
+          // localStorage indisponível: segue com o tema padrão do HTML
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <a href="#conteudo" class="visually-hidden">Pular para o conteúdo</a>
+    <TopBar />
+    <main id="conteudo" class="container">
+      <slot />
+    </main>
+    <BottomPlayer />
+
+    <script src="../scripts/theme.ts"></script>
+    <script src="../scripts/player.ts"></script>
+    <script src="../scripts/click.ts"></script>
+    <script src="../scripts/global-search.ts"></script>
+  </body>
+</html>
+
+<style>
+  main {
+    min-height: 60vh;
+    padding-block: var(--sp-5) var(--sp-7);
+  }
+</style>

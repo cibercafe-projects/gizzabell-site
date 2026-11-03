@@ -1,0 +1,120 @@
+/*
+ * Design tokens — fonte única de verdade.
+ * Nenhum componente deve usar valor literal de cor, espaçamento, raio ou sombra.
+ * Tema claro e escuro derivam dos mesmos nomes.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* superfícies */
+  --bg: #07050e;
+  --bg-grid: #140a2b;
+  --surface: #100a20;
+  --surface-2: #180f30;
+  --surface-3: #221541;
+  --line: #2e1f52;
+  --line-strong: #462f7d;
+
+  /* texto */
+  --text: #ece9f8;
+  --text-muted: #a49dc4;
+  --text-dim: #6f6890;
+  --text-inverse: #0a0714;
+
+  /* neon */
+  --neon-magenta: #ff2e88;
+  --neon-cyan: #00eaff;
+  --neon-lime: #b4ff00;
+  --neon-violet: #a45cff;
+  --neon-amber: #ffb300;
+
+  /* papéis */
+  --accent: var(--neon-magenta);
+  --accent-2: var(--neon-cyan);
+  --accent-3: var(--neon-lime);
+
+  /* brilhos */
+  --glow-accent: 0 0 0.5rem color-mix(in srgb, var(--accent) 55%, transparent);
+  --glow-accent-strong: 0 0 0.35rem var(--accent), 0 0 1.4rem color-mix(in srgb, var(--accent) 45%, transparent);
+  --glow-cyan: 0 0 0.35rem var(--neon-cyan), 0 0 1.1rem color-mix(in srgb, var(--neon-cyan) 40%, transparent);
+  --glow-soft: 0 0 1.5rem color-mix(in srgb, var(--accent) 18%, transparent);
+
+  /* tipografia */
+  --font-sans: ui-sans-serif, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Menlo, Consolas, monospace;
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-base: 1rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.75rem;
+  --fs-2xl: 2.5rem;
+  --lh-tight: 1.15;
+  --lh-base: 1.6;
+
+  /* espaçamento */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+  --sp-8: 4rem;
+
+  /* formas */
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  /* sombras */
+  --shadow-card: 0 8px 24px rgb(0 0 0 / 45%);
+  --shadow-card-hover: 0 12px 32px rgb(0 0 0 / 60%);
+  --shadow-bar: 0 0 0 1px var(--line), 0 -8px 30px rgb(0 0 0 / 40%);
+
+  /* camadas */
+  --z-bar: 40;
+  --z-player: 45;
+  --z-overlay: 60;
+
+  /* layout */
+  --bar-h: 56px;
+  --player-h: 64px;
+  --content-max: 1180px;
+  --tap-min: 44px;
+  --transition: 160ms ease;
+}
+
+:root[data-tema='claro'] {
+  color-scheme: light;
+
+  --bg: #f2eeff;
+  --bg-grid: #e5dcff;
+  --surface: #ffffff;
+  --surface-2: #f6f2ff;
+  --surface-3: #ece4ff;
+  --line: #d9cdf5;
+  --line-strong: #b9a6ee;
+
+  --text: #1a1030;
+  --text-muted: #4c3f70;
+  --text-dim: #6a5c90;
+  --text-inverse: #ffffff;
+
+  /* no tema claro o neon precisa escurecer para manter o contraste AA */
+  --neon-magenta: #c4005c;
+  --neon-cyan: #006f7d;
+  --neon-lime: #4a7000;
+  --neon-violet: #6a1fc4;
+  --neon-amber: #8a5300;
+
+  --glow-accent: 0 0 0.35rem color-mix(in srgb, var(--accent) 40%, transparent);
+  --glow-accent-strong: 0 0 0.25rem var(--accent);
+  --glow-cyan: 0 0 0.25rem var(--neon-cyan);
+  --glow-soft: 0 0 1.2rem color-mix(in srgb, var(--accent) 22%, transparent);
+
+  --shadow-card: 0 6px 20px rgb(43 20 90 / 12%);
+  --shadow-card-hover: 0 10px 28px rgb(43 20 90 / 20%);
+  --shadow-bar: 0 0 0 1px var(--line), 0 -6px 24px rgb(43 20 90 / 10%);
+}

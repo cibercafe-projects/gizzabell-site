@@ -1,0 +1,138 @@
+---
+import AdminLayout from '~/layouts/AdminLayout.astro';
+import { postRepository } from '~/lib/content/file-post.repository';
+import { agendaRepository } from '~/lib/content/file-agenda.repository';
+import { releaseRepository } from '~/lib/content/file-release.repository';
+import { counterStore } from '~/lib/content/file-counter.store';
+
+const posts = await postRepository.list({ incluirPrivados: true });
+const eventos = await agendaRepository.list();
+const lancamentos = await releaseRepository.list();
+const ranking = await counterStore.ranking();
+const totalCliques = ranking.reduce((soma, r) => soma + r.cliques, 0);
+
+const cards = [
+  { titulo: 'Posts', valor: posts.length, detalhe: `${posts.filter((p) => p.privado).length} privado(s)` },
+  { titulo: 'Eventos', valor: eventos.length, detalhe: `${eventos.filter((e) => e.futuro).length} futuro(s)` },
+  { titulo: 'Lançamentos', valor: lancamentos.length, detalhe: `${lancamentos.reduce((s, l) => s + l.faixas.length, 0)} faixas` },
+  { titulo: 'Cliques', valor: totalCliques, detalhe: `${ranking.length} post(s) clicado(s)` },
+];
+---
+
+<AdminLayout titulo="Painel">
+  <h1 class="titulo neon-text">Painel</h1>
+
+  <div class="cards">
+    {
+      cards.map((card) => (
+        <div class="card card--stat">
+          <p class="mono card__titulo">{card.titulo}</p>
+          <p class="card__valor">{card.valor}</p>
+          <p class="mono card__detalhe">{card.detalhe}</p>
+        </div>
+      ))
+    }
+  </div>
+
+  <section class="bloco">
+    <h2 class="bloco__titulo">Últimos posts</h2>
+    {
+      posts.length === 0 ? (
+        <p class="empty">Nenhum post ainda.</p>
+      ) : (
+        <table class="tabela">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Data</th>
+              <th>Categoria</th>
+              <th>Cliques</th>
+            </tr>
+          </thead>
+          <tbody>
+            {posts.slice(0, 10).map((post) => (
+              <tr>
+                <td>
+                  {post.nome}
+                  {post.privado && <span class="etiqueta mono">privado</span>}
+                </td>
+                <td class="mono">{post.data}</td>
+                <td class="mono">{post.categoria}</td>
+                <td class="mono">{ranking.find((r) => r.slug === post.slug)?.cliques ?? 0}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )
+    }
+  </section>
+</AdminLayout>
+
+<style>
+  .titulo {
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+  }
+
+  .cards {
+    display: grid;
+    gap: var(--sp-3);
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    margin-bottom: var(--sp-6);
+  }
+
+  .card--stat {
+    padding: var(--sp-4);
+  }
+
+  .card__titulo {
+    margin: 0;
+  }
+
+  .card__valor {
+    margin: var(--sp-1) 0;
+    font-size: var(--fs-2xl);
+    line-height: 1;
+    color: var(--accent);
+    text-shadow: var(--glow-accent);
+  }
+
+  .card__detalhe {
+    margin: 0;
+  }
+
+  .bloco {
+    margin-bottom: var(--sp-6);
+  }
+
+  .bloco__titulo {
+    font-family: var(--font-mono);
+    color: var(--accent-2);
+  }
+
+  .tabela {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+  }
+
+  .tabela th,
+  .tabela td {
+    text-align: left;
+    padding: var(--sp-2) var(--sp-3);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .tabela th {
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .etiqueta {
+    margin-left: var(--sp-2);
+    padding: 1px var(--sp-2);
+    border: 1px solid var(--neon-violet);
+    border-radius: var(--radius-pill);
+    color: var(--neon-violet);
+  }
+</style>
