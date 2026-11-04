@@ -10,6 +10,8 @@ WorkingDirectory=/srv/gizzabell-site
 EnvironmentFile=/srv/gizzabell-site/.env
 Environment=NODE_ENV=production
 Environment=TZ=America/Sao_Paulo
+# Só o Caddy (proxy reverso) fala com o Node: o app não abre a porta para a internet.
+Environment=HOST=127.0.0.1
 ExecStart=/usr/bin/node ./dist/server/entry.mjs
 Restart=always
 RestartSec=5
